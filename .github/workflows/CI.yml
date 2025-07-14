@@ -57,6 +57,12 @@ jobs:
         run: ./gradlew build -x test
         shell: bash
 
+      # git 사용자 정보 설정
+      - name: set git user identity
+        run: |
+          git config user.name ${{secrets.USERNAME}}
+          git config user.email ${{secrets.USEREMAIL}}
+
       # origin dev로 머지
       - name: merge to dev branch
         if: ${{ success() }}
