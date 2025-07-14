@@ -16,6 +16,8 @@ jobs:
     steps:
       #workflow 실행전 checkout
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0' #모든 커밋과 브랜치를 가져옴
 
       # jdk 21버전 설치
       - name: Set up JDK 21
