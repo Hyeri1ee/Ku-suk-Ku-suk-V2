@@ -6,8 +6,8 @@ on:
   push:
     branches:
       - dev
-      - devops/#35
-#.
+      - devops/#35 #테스트를 위해 잠시 추가
+
 jobs:
   build:
     name: CI
