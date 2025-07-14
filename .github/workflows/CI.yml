@@ -64,15 +64,15 @@ jobs:
           git config user.email ${{secrets.USEREMAIL}}
 
       # origin dev로 머지
-      - name: merge to dev branch
-        if: ${{ success() }}
-        #build 성공시 아래 실행
-        run: |
-          git checkout dev
-          git merge "${GITHUB_REF#refs/heads/}" --no-ff
-          git push origin dev
+      #- name: merge to dev branch
+      #  if: ${{ success() }}
+      #  #build 성공시 아래 실행
+      #  run: |
+      #    git checkout dev
+      #    git merge --no-ff "${GITHUB_REF#refs/heads/}" || echo "충돌 발생"
+      #    git push origin dev로
 
-      # upstream dev로 pull request 생성
+      # origin dev로 pull request 생성
       - name: Create Pull Request to dev
         uses: peter-evans/create-pull-request@v5
         with:
