@@ -8,6 +8,10 @@ on:
       - dev
       - 'devops/*' #테스트를 위해 잠시 추가
 
+env:
+  S3_BUCKET_NAME: kusuk
+  PROJECT_NAME: KU-suk-Ku-suk
+
 jobs:
   build:
     name: CI
@@ -63,6 +67,29 @@ jobs:
           git config user.name ${{secrets.USERNAME}}
           git config user.email ${{secrets.USEREMAIL}}
 
+      # upload build artifact
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: build/libs/*.jar
+
+      - name: Copy deploy scripts and appspec
+        run: |
+          mkdir -p deploy
+          cp ./scripts/*.sh ./deploy/
+          cp appspec.yml ./deploy/
+          cp build/libs/*.jar ./deploy/
+
+      - name: Zip deploy folder
+        run: |
+          cd deploy
+          zip -r ../$GITHUB_SHA.zip .
+
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp $GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip --region ap-northeast-2
+          
       # origin dev로 머지
       #- name: merge to dev branch
       #  if: ${{ success() }}
