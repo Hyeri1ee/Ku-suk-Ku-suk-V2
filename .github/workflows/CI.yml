@@ -97,7 +97,22 @@ jobs:
         run: |
           aws s3 cp $GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip --region ap-northeast-2
 
-    
+      - name: Cleanup old zip files in S3 (keep latest 2)
+        run: |
+          # 최신 2개 제외한 나머지 삭제
+          files_to_delete=$(aws s3 ls s3://$S3_BUCKET_NAME/$PROJECT_NAME/ --recursive --region ap-northeast-2 | \
+            sort -k1,1 -k2,2r | \
+            awk '{print $4}' | \
+            grep '\.zip$' | \
+            tail -n +3)
+          
+          if [ -n "$files_to_delete" ]; then
+            echo "Deleting old files:"
+            echo "$files_to_delete"
+            echo "$files_to_delete" | xargs -I {} aws s3 rm s3://$S3_BUCKET_NAME/$PROJECT_NAME/{} --region ap-northeast-2
+          else
+            echo "No old files to delete."
+          fi
           
       # origin dev로 머지
       #- name: merge to dev branch
