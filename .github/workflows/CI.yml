@@ -58,8 +58,12 @@ jobs:
 
       # build
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew clean build -x test
         shell: bash
+
+      - name: List contents of build/libs
+        run: |
+          ls -al build/libs/
 
       # git 사용자 정보 설정
       - name: set git user identity
