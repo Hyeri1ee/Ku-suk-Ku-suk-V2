@@ -30,14 +30,13 @@ jobs:
           sort -k1,1 -k2,2r | head -n 1 | awk '{print $4}')
           echo "latest_zip=$latest_zip" >> $GITHUB_OUTPUT
 
-          - name: Deploy via AWS CodeDeploy
-            run: |
-              aws deploy create-deployment \
-                --application-name KU-suk-Ku-suk-App \
-                --deployment-config-name CodeDeployDefault.AllAtOnce \
-                --deployment-group-name KU-suk-Ku-suk-Group \
-                --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$latest_zip \
-                --region ap-northeast-2
-            env:
-              latest_zip: ${{ steps.get_latest_zip.outputs.latest_zip }}
+      - name: Deploy via AWS CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name KU-suk-Ku-suk-App \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name KU-suk-Ku-suk-Group \
+            --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=${{ steps.get_latest_zip.outputs.latest_zip }} \
+            --region ap-northeast-2
+
 
