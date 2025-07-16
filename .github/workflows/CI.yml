@@ -105,23 +105,16 @@ jobs:
         run: |
           echo "📂 Listing all zip files in s3://$S3_BUCKET_NAME/$PROJECT_NAME/"
 
-          # 최신 2개 제외한 나머지 삭제
+          # 전체 zip 목록을 시간순으로 정렬 후 상위 2개 제외한 나머지 삭제
           files_to_delete=$(aws s3 ls s3://$S3_BUCKET_NAME/$PROJECT_NAME/ --recursive --region ap-northeast-2 | \
-            grep '\.zip$' | \
-            grep -v "$GITHUB_SHA.zip" | \
-            sort -k1,1r -k2,2r | \
-            awk '{print $4}' | \
-            tail -n +3)
+          grep '\.zip$' | \
+          sort -k1,1r -k2,2r | \
+          awk '{print $4}' | \
+          tail -n +3)
           
-          if [ -n "$files_to_delete" ]; then
-            echo "🗑️ Deleting old files:"
-            echo "$files_to_delete"
-            echo "$files_to_delete" | while read -r file; do
-            aws s3 rm s3://$S3_BUCKET_NAME/$PROJECT_NAME/"$file" --region ap-northeast-2
-            done
-          else
-            echo "✅ No old files to delete."
-          fi
+          for file in $files_to_delete; do
+          aws s3 rm s3://$S3_BUCKET_NAME/$file --region ap-northeast-2
+          done
           
 
       # origin dev로 머지
