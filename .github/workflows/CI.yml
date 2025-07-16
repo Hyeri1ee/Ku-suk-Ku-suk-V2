@@ -116,9 +116,12 @@ jobs:
           if [ -n "$files_to_delete" ]; then
             echo "🗑️ Deleting old files:"
             echo "$files_to_delete"
+            echo "Full path to delete: $file"
             echo "$files_to_delete" | while read -r file; do
-            aws s3 rm s3://$S3_BUCKET_NAME/$PROJECT_NAME/"$file" --region ap-northeast-2
-            done
+            echo "Deleting: s3://$S3_BUCKET_NAME/$file"
+            aws s3 rm s3://$S3_BUCKET_NAME/"$file" --region ap-northeast-2
+          done
+  
           else
             echo "✅ No old files to delete."
           fi
