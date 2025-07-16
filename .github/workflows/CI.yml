@@ -116,11 +116,6 @@ jobs:
           aws s3 rm s3://$S3_BUCKET_NAME/$file --region ap-northeast-2
           done
           
-          
-          else
-            echo "✅ No old files to delete."
-          fi
-          
 
       # origin dev로 머지
       #- name: merge to dev branch
