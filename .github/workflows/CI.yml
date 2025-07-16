@@ -58,8 +58,12 @@ jobs:
 
       # build
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew clean build -x test
         shell: bash
+
+      - name: List contents of build/libs
+        run: |
+          ls -al build/libs/
 
       # git 사용자 정보 설정
       - name: set git user identity
@@ -99,40 +103,45 @@ jobs:
 
       - name: Cleanup old zip files in S3 (keep latest 2)
         run: |
+          echo "📂 Listing all zip files in s3://$S3_BUCKET_NAME/$PROJECT_NAME/"
+
           # 최신 2개 제외한 나머지 삭제
           files_to_delete=$(aws s3 ls s3://$S3_BUCKET_NAME/$PROJECT_NAME/ --recursive --region ap-northeast-2 | \
-            sort -k1,1 -k2,2r | \
-            awk '{print $4}' | \
             grep '\.zip$' | \
+            grep -v "$GITHUB_SHA.zip" | \
+            sort -k1,1r -k2,2r | \
+            awk '{print $4}' | \
             tail -n +3)
           
           if [ -n "$files_to_delete" ]; then
-            echo "Deleting old files:"
+            echo "🗑️ Deleting old files:"
             echo "$files_to_delete"
-            echo "$files_to_delete" | xargs -I {} aws s3 rm s3://$S3_BUCKET_NAME/$PROJECT_NAME/{} --region ap-northeast-2
+            echo "$files_to_delete" | while read -r file; do
+            aws s3 rm s3://$S3_BUCKET_NAME/$PROJECT_NAME/"$file" --region ap-northeast-2
+            done
           else
-            echo "No old files to delete."
+            echo "✅ No old files to delete."
           fi
           
-      # origin dev로 머지
-      #- name: merge to dev branch
-      #  if: ${{ success() }}
-      #  #build 성공시 아래 실행
-      #  run: |
-      #    git checkout dev
-      #    git merge --no-ff "${GITHUB_REF#refs/heads/}" || echo "충돌 발생"
-      #    git push origin dev로
+          # origin dev로 머지
+          #- name: merge to dev branch
+          #  if: ${{ success() }}
+          #  #build 성공시 아래 실행
+          #  run: |
+          #    git checkout dev
+          #    git merge --no-ff "${GITHUB_REF#refs/heads/}" || echo "충돌 발생"
+          #    git push origin dev로
+          
+          # origin dev로 pull request 생성
+          #- name: Create Pull Request to dev
+          #  uses: peter-evans/create-pull-request@v5
+          #  with:
+          #    token: ${{ secrets.GITHUB_TOKEN }}
+          #    base: dev # 머지 대상 (ex: dev 브랜치로 PR 생성)
+          #    branch: ${{ github.ref_name }} # 현재 브랜치에서
+          #    title: '[chore]: 자동 PR ${{ github.ref_name }} → dev'
+          #    body: |
+          #      이 PR은 CI 워크플로우에 의해 자동 생성되었습니다.
+          #      ✅모든 CI step들을 완료하여 자동으로 upstream dev에 머지되었음을 증명합니다.
 
-      # origin dev로 pull request 생성
-      #- name: Create Pull Request to dev
-      #  uses: peter-evans/create-pull-request@v5
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    base: dev # 머지 대상 (ex: dev 브랜치로 PR 생성)
-      #    branch: ${{ github.ref_name }} # 현재 브랜치에서
-      #    title: '[chore]: 자동 PR ${{ github.ref_name }} → dev'
-      #    body: |
-      #      이 PR은 CI 워크플로우에 의해 자동 생성되었습니다.
-      #      ✅모든 CI step들을 완료하여 자동으로 upstream dev에 머지되었음을 증명합니다.
-            
       #      From 브랜치: `${{ github.ref_name }}`

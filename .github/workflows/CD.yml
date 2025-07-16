@@ -12,7 +12,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
 
       - name: Configure AWS credentials
@@ -27,7 +26,7 @@ jobs:
         run: |
           latest_zip=$(aws s3 ls s3://$S3_BUCKET_NAME/$PROJECT_NAME/ --recursive --region ap-northeast-2 | \
           grep '\.zip$' | \
-          sort -k1,1 -k2,2r | head -n 1 | awk '{print $4}')
+          sort -k1,1r -k2,2r | head -n 1 | awk '{print $4}')
           echo "latest_zip=$latest_zip" >> $GITHUB_OUTPUT
 
       - name: Deploy via AWS CodeDeploy
@@ -38,5 +37,4 @@ jobs:
             --deployment-group-name KU-suk-Ku-suk-Group \
             --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=${{ steps.get_latest_zip.outputs.latest_zip }} \
             --region ap-northeast-2
-
 
