@@ -33,7 +33,7 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name KU-suk-Ku-suk-App \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
             --deployment-group-name KU-suk-Ku-suk \
             --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=${{ steps.get_latest_zip.outputs.latest_zip }} \
             --region ap-northeast-2
