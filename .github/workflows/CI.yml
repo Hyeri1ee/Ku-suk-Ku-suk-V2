@@ -85,6 +85,10 @@ jobs:
           cp appspec.yml ./deploy/
           cp build/libs/*.jar ./deploy/
 
+      - name: Grant execute permission for deploy scripts
+        run: chmod +x ./deploy/*.sh
+        shell: bash
+
       - name: Zip deploy folder
         run: |
           cd deploy
